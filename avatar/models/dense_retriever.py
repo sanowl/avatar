@@ -2,7 +2,6 @@ import argparse
 import json
 import os
 import os.path as osp
-import random
 from typing import Any
 
 import torch
@@ -15,6 +14,7 @@ from transformers import RobertaModel, RobertaTokenizer
 from avatar.models import VSS
 from avatar.models.model import ModelForQA
 from stark_qa import load_qa, load_skb
+import secrets
 
 torch.backends.cudnn.enabled = True
 torch.backends.cuda.matmul.allow_tf32 = True
@@ -280,7 +280,7 @@ def get_constrast_data(qa_dataset,
             print(f'generate random negatives')
             for idx in range(len(qa_dataset)):
                 query, query_id, answer_ids, meta_info = qa_dataset[idx]
-                random_negs = random.sample(range(len(qa_dataset)), num_candidate_negatives + len(answer_ids))
+                random_negs = secrets.SystemRandom().sample(range(len(qa_dataset)), num_candidate_negatives + len(answer_ids))
                 random_negs = [n for n in random_negs if n not in answer_ids]
                 contrast_data.append((idx, answer_ids, random_negs))
             print(f'len(random_data): {len(contrast_data)}')
