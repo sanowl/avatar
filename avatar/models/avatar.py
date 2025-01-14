@@ -4,7 +4,6 @@ import numpy as np
 import os
 import os.path as osp
 import pandas as pd
-import random
 import re
 import time
 import torch
@@ -24,6 +23,7 @@ from stark_qa.tools.io import read_from_file, write_to_file
 from avatar.utils.timer import exit_after
 from stark_qa.skb import SKB
 from stark_qa.tools.api import get_llm_output
+import secrets
 
 
 class MemoryBank:
@@ -340,7 +340,7 @@ class AvaTaR(ModelForQA):
         else:
             train_indices = qa_dataset.get_idx_split()['train'].tolist()
             pattern = 'NA'
-        random.shuffle(train_indices)
+        secrets.SystemRandom().shuffle(train_indices)
 
         # prepare for the output directory
         print(f'Generating for seed {seed}...')
@@ -368,7 +368,7 @@ class AvaTaR(ModelForQA):
         #                     Initialize actions                  #
         ###########################################################
         def get_initial_prompt() -> str:
-            sample_indices = random.sample(train_indices, min(n_examples, len(train_indices)))
+            sample_indices = secrets.SystemRandom().sample(train_indices, min(n_examples, len(train_indices)))
             prompt = self._get_prompt(
                 name='initialize_actions', 
                 sample_indices=sample_indices,
@@ -434,7 +434,7 @@ class AvaTaR(ModelForQA):
                 assert globals().get('get_node_score_dict') is not None, '`get_node_score_dict` is not defined!'
                 
                 sampled_batch, debug_messages = [], []
-                random.shuffle(train_indices)
+                secrets.SystemRandom().shuffle(train_indices)
                 for idx in train_indices:
                     query, query_id, answer_ids, meta_info = qa_dataset[idx]
                     _, candidate_ids = self.get_parent_topk(query, query_id, topk=topk_eval)
@@ -739,7 +739,7 @@ class AvaTaR(ModelForQA):
                     val_indices = self.load_group(surfix='val')[0][group_idx]['query_idx']
                     if n_eval > 0 and len(val_indices) < n_eval:
                         train_indices = self.load_group(surfix='train')[0][group_idx]['query_idx']
-                        random.Random(0).shuffle(train_indices)
+                        secrets.SystemRandom().Random(0).shuffle(train_indices)
                         indices = val_indices + train_indices[:n_eval - len(val_indices)]
                     else:
                         indices = val_indices
@@ -747,7 +747,7 @@ class AvaTaR(ModelForQA):
                     indices = self.load_group(surfix='test')[0][group_idx]['query_idx']
             else:
                 indices = qa_dataset.get_idx_split()[split].tolist()
-        random.Random(0).shuffle(indices)
+        secrets.SystemRandom().Random(0).shuffle(indices)
         indices = indices[:n_eval] if n_eval > 0 else indices
         return indices
 
@@ -1043,7 +1043,7 @@ class AvaTaR(ModelForQA):
             ################### Initialize group ##################
             if not osp.exists(path_bootstrap):
                 train_indices = qa_dataset.get_idx_split()['train'].tolist()
-                indices = random.sample(train_indices, n_init_examples)
+                indices = secrets.SystemRandom().sample(train_indices, n_init_examples)
                 group_initial = self.initialize_group(qa_dataset, indices, add_none=True, save_to='initial')
                 self.save_group({key: {'pattern': group_initial[key]['pattern'], 'query_idx': []} for key in group_initial.keys()}, surfix='bootstrap')
                 for batch_idx in tqdm(range(np.ceil(len(train_indices) / batch_size).astype(int))):
