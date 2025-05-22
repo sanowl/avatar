@@ -107,7 +107,7 @@ def get_gpt4v_output(image: Image.Image,
     for cnt in range(max_retry):
         try:
             response = requests.post("https://api.openai.com/v1/chat/completions", 
-                                     headers=headers, json=payload)
+                                     headers=headers, json=payload, timeout=60)
             result = response.json()['choices'][0]['message']['content']
         except Exception as e:
             print(cnt, "=>", e, f' [sleep for {sleep_time} sec]')
