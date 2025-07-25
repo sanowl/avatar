@@ -1,11 +1,11 @@
 import os
 import os.path as osp
-import random
 import sys
 import argparse
 
 import torch
 from tqdm import tqdm
+import secrets
 
 sys.path.append('.')
 from avatar.kb import Flickr30kEntities
@@ -81,7 +81,7 @@ if __name__ == '__main__':
             qa_dataset = load_qa(args.dataset, human_generated_eval=args.human_generated_eval)
             lst = [qa_dataset[i][1] for i in range(len(qa_dataset))]
             emb_path = osp.join(emb_dir, f'query_emb_dict.pt')
-    random.shuffle(lst)
+    secrets.SystemRandom().shuffle(lst)
             
     if osp.exists(emb_path):
         emb_dict = torch.load(emb_path)
