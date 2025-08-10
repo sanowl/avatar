@@ -24,6 +24,7 @@ from stark_qa.tools.io import read_from_file, write_to_file
 from avatar.utils.timer import exit_after
 from stark_qa.skb import SKB
 from stark_qa.tools.api import get_llm_output
+from security import safe_command
 
 
 class MemoryBank:
@@ -907,7 +908,7 @@ class AvaTaR(ModelForQA):
         for device, command in zip(devices, commands):
             str_device = device.split(':')[-1]
             print('CUDA_VISIBLE_DEVICES:', str_device)
-            process = Popen(command, env=dict(os.environ, CUDA_VISIBLE_DEVICES=str_device))
+            process = safe_command.run(Popen, command, env=dict(os.environ, CUDA_VISIBLE_DEVICES=str_device))
             processes.append(process)
 
         for process in processes:
